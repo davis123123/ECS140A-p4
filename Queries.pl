@@ -17,4 +17,4 @@ fc_course(L) :-
 
 % c
 students(L) :-
-  findall(Name, (student(Name, [H|T], _)), L).
+  bagof(Name, student(Name, (Current, member(ecs10, Current)), _), L).
