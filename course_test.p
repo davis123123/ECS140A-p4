@@ -56,4 +56,3 @@ instructor(davis, [ecs60]).
 instructor(gysel, [ecs20, ecs120]).
 instructor(butner, [ecs10, ecs50]).
 instructor(bishop, [ecs153]).
-
