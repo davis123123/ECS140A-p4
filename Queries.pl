@@ -31,3 +31,11 @@ intersect([], _).
 intersect([H|T], L) :-
   member(H, L),
   intersect(T, L).
+
+% e) Find all pre-requisites of a course (allprereq). (This will involve finding not only
+% the immediate prerequisites of a course, but pre-requisite courses of pre-requisites
+% and so on.)
+
+% f) Find all teachers the students of a course are currently taking (student_teach).
+student_teach(Course, ListOfTeachers) :-
+  findall(Name, (student(Name, CurrentCourses, PrevCourses), \+ finishedPreReqs(CurrentCourses, PrevCourses)), ListOfTeachers).
