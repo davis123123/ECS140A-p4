@@ -40,13 +40,13 @@ isSubset([H|T], L) :-
 % teachers for the courses that each student (in the list) is taking currently.
 student_teach(Course, ListOfTeachers) :-
   students(Course, ListOfStudents),
-  findall(Name, ( instructor(Name, CoursesTeaching), process(ListOfStudents, CoursesTeaching) ), ListOfTeachers).
-
-process([], _).
-process([NextStudent|T], CoursesTeaching) :-
-  student(NextStudent, CurrentCourses, _),
-  inter(CoursesTeaching, CurrentCourses, Intersections),
-
+  findall(Teacher, (instructor(Teacher, CoursesTeaching), member(Course, CoursesTeaching)), ListOfTeachers).
+%   process(ListOfStudents, ListOfTeachers).
+%
+% process([], _).
+% process([NextStudent|T], CoursesTeaching) :-
+%   student(NextStudent, CurrentCourses, _),
+%   inter(CoursesTeaching, CurrentCourses, Intersections).
 
 % https://stackoverflow.com/questions/9615002/intersection-and-union-of-2-lists
 inter([], _, []).
