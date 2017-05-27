@@ -41,7 +41,7 @@ isSubset([H|T], L) :-
 student_teach(Course, ListOfTeachers) :-
   students(Course, ListOfStudents),
   findall(Teacher, (instructor(Teacher, CoursesTeaching), member(Course, CoursesTeaching)), ListOfTeachers).
-%   process(ListOfStudents, ListOfTeachers).
+
 %
 % process([], _).
 % process([NextStudent|T], CoursesTeaching) :-
