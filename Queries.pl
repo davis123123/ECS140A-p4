@@ -35,18 +35,40 @@ isSubset([H|T], L) :-
 % e) Find all pre-requisites of a course (allprereq). (This will involve finding not only
 % the immediate prerequisites of a course, but pre-requisite courses of pre-requisites
 % and so on.)
+allprereq(Course, Uniques) :-
+  findall(Class, (course(Class, _, _), findpreq(Course, Class)), List), remove_duplicates(List, Uniques).
+findpreq(Course, Class) :-
+  course(Course, PList, _), deepPreq(PList, Class); course(Course, PList, _), member(Class, PList).
+deepPreq(PList, Class) :-
+  member(X, PList), findpreq(X, Class).
+% http://www.tek-tips.com/viewthread.cfm?qid=1602371
+remove_duplicates(List, Result):-
+    remove_duplicates(List, [], Result).
+remove_duplicates([], Result, Result).
+remove_duplicates([Item | Rest], Current, NewRest) :-
+    member(Item, Current),!,
+    remove_duplicates(Rest, Current, NewRest).
+remove_duplicates([Item | Rest], Current, NewRest) :-
+    append(Current, [Item], NewCurrent),
+    remove_duplicates(Rest, NewCurrent, NewRest).
+% -------------------------------------------------
 
 % f) Given a course, find all the students in that course, then find all the
 % teachers for the courses that each student (in the list) is taking currently.
 student_teach(Course, ListOfTeachers) :-
-  students(Course, ListOfStudents),
-  findall(Teacher, (instructor(Teacher, CoursesTeaching), member(Course, CoursesTeaching)), ListOfTeachers).
+  findall(
+    Teacher,
+    (instructor(Teacher, CoursesTaught),
+    students(Course, ListOfStudents),
+    processStudents(ListOfStudents, CoursesTaught)),
+    Temp),
+  remove_duplicates(Temp, ListOfTeachers).
 
-%
-% process([], _).
-% process([NextStudent|T], CoursesTeaching) :-
-%   student(NextStudent, CurrentCourses, _),
-%   inter(CoursesTeaching, CurrentCourses, Intersections).
+processStudents([H|T], CoursesTaught) :-
+  student(H, CurrentCourses, _),
+  inter(CurrentCourses, CoursesTaught, Matches),
+  (\+ length(Matches, 0));
+  processStudents(T, CoursesTaught).
 
 % https://stackoverflow.com/questions/9615002/intersection-and-union-of-2-lists
 inter([], _, []).
