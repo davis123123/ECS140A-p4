@@ -37,10 +37,13 @@ isSubset([H|T], L) :-
 % and so on.)
 allprereq(Course, Uniques) :-
   findall(Class, (course(Class, _, _), findpreq(Course, Class)), List), remove_duplicates(List, Uniques).
+
 findpreq(Course, Class) :-
   course(Course, PList, _), deepPreq(PList, Class); course(Course, PList, _), member(Class, PList).
+
 deepPreq(PList, Class) :-
   member(X, PList), findpreq(X, Class).
+
 % http://www.tek-tips.com/viewthread.cfm?qid=1602371
 remove_duplicates(List, Result):-
     remove_duplicates(List, [], Result).
