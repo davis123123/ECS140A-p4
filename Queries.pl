@@ -56,11 +56,8 @@ remove_duplicates([Item | Rest], Current, NewRest) :-
 % f) Given a course, find all the students in that course, then find all the
 % teachers for the courses that each student (in the list) is taking currently.
 student_teach(Course, ListOfTeachers) :-
-  findall(
-    Teacher,
-    (instructor(Teacher, CoursesTaught),
-    students(Course, ListOfStudents),
-    processStudents(ListOfStudents, CoursesTaught)),
+  findall(Teacher,
+    (instructor(Teacher, CoursesTaught), students(Course, ListOfStudents), processStudents(ListOfStudents, CoursesTaught)),
     Temp),
   remove_duplicates(Temp, ListOfTeachers).
 
