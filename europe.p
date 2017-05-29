@@ -128,4 +128,3 @@ is_adjacent(hungary,romania).
 is_adjacent(hungary,serbia).
 is_adjacent(hungary,croatia).
 is_adjacent(hungary,slovenia).
-
