@@ -6,15 +6,6 @@ color(white).
 color(blue).
 color(gold).
 
-% https://stackoverflow.com/questions/9615002/intersection-and-union-of-2-lists
-inter([], _, []).
-inter([H1|T1], L2, [H1|Res]) :-
-  member(H1, L2),
-  inter(T1, L2, Res).
-inter([_|T1], L2, Res) :-
-  inter(T1, L2, Res).
-% -------------------------------------------------------------------------------
-
 % http://www.tek-tips.com/viewthread.cfm?qid=1602371
 remove_duplicates(List, Result):-
     remove_duplicates(List, [], Result).
@@ -31,34 +22,36 @@ listCountries(L) :-
   findall(Country, is_adjacent(Country, _), Temp),
   remove_duplicates(Temp, L).
 
-colorizeMap([], UnsortedMap, SortedMap) :-
-  sort(UnsortedMap, SortedMap).
-colorizeMap([NextCountry|T], UnsortedMap, SortedMap) :-
-  colorizeCountry(NextCountry, UnsortedMap, Element),
-  colorizeMap(T, [Element|UnsortedMap], SortedMap).
+colorizeMap([], InitialMap, SortedMap) :-
+  SortedMap = InitialMap.
+  % sort(InitialMap, SortedMap).
+colorizeMap([NextCountry|T], InitialMap, SortedMap) :-
+  colorizeCountry(NextCountry, InitialMap, Element, UpdatedMap),
+  colorizeMap(T, [Element|UpdatedMap], SortedMap).
 
-colorizeCountry(NextCountry, UnsortedMap, Element) :-
-  findall(AdjCountry, (is_adjacent(NextCountry, AdjCountry), member([AdjCountry, _], UnsortedMap)), AdjCountries),
-  findAdjColors(AdjCountries, UnsortedMap, AdjColors),
+colorizeCountry(NextCountry, InitialMap, Element, UpdatedMap) :-
+  findall(AdjCountry, (is_adjacent(NextCountry, AdjCountry), member([AdjCountry, _], InitialMap)), AdjCountries),
+  findAdjColors(AdjCountries, InitialMap, AdjColors),
   findall(Color, (color(Color), \+ member(Color, AdjColors)), ValidColors),
-  setColor(ValidColors, NextCountry, Element).
+  setColor(ValidColors, NextCountry, Element, InitialMap, UpdatedMap).
 
 findAdjColors([], _, []).
-findAdjColors([AdjCountry|OtherAdjCountries], UnsortedMap, [AdjColor|AdjColors]) :-
-  findall(Color, (color(Color), member([AdjCountry, Color], UnsortedMap)), [AdjColor|_]),
-  findAdjColors(OtherAdjCountries, UnsortedMap, AdjColors).
+findAdjColors([AdjCountry|OtherAdjCountries], InitialMap, [AdjColor|AdjColors]) :-
+  findall(Color, (color(Color), member([AdjCountry, Color], InitialMap)), [AdjColor|_]),
+  findAdjColors(OtherAdjCountries, InitialMap, AdjColors).
 
-setColor([NextColor|_], NextCountry, Element) :-
-  Element = [NextCountry, NextColor].
+setColor([NextColor|_], NextCountry, Element, InitialMap, UpdatedMap) :-
+  Element = [NextCountry, NextColor],
+  UpdatedMap = InitialMap.
+setColor([], _, Element, [[PrevCountry|[PrevColor|_]]|History], UpdatedMap) :-
+  findall(AdjCountry, (is_adjacent(PrevCountry, AdjCountry), member([AdjCountry, _], History)), AdjCountries),
+  findAdjColors(AdjCountries, History, AdjColors),
+  NewAdjColors = [PrevColor|AdjColors],
+  findall(Color, (color(Color), \+ member(Color, NewAdjColors)), ValidColors),
+  setColor(ValidColors, PrevCountry, Element, History, UpdatedMap).
 
 mapColoring(SortedMap) :-
-  listCountries(List),
-  sort(List, AllCountries),
-  delete(AllCountries, hungary, Countries),
-  UnsortedMap = [[hungary,red]],
-  colorizeMap(Countries, UnsortedMap, SortedMap).
-
-% app([],L) :-
-%   print(L).
-% app([H|T], L) :-
-%   app(T, [H|L]).
+  listCountries(AllCountries),
+  delete(AllCountries, portugal, Countries),
+  InitialMap = [[portugal,red]],
+  colorizeMap(Countries, InitialMap, SortedMap).
