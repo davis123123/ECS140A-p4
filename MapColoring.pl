@@ -25,30 +25,31 @@ listCountries(L) :-
 colorizeMap([], InitialMap, SortedMap) :-
   SortedMap = InitialMap.
   % sort(InitialMap, SortedMap).
-colorizeMap([NextCountry|T], InitialMap, SortedMap) :-
-  colorizeCountry(NextCountry, InitialMap, Element, UpdatedMap),
-  colorizeMap(T, [Element|UpdatedMap], SortedMap).
+colorizeMap([NextCountry|Remaining], InitialMap, SortedMap) :-
+  colorizeCountry(NextCountry, Remaining, NewRemaining, InitialMap, Element, UpdatedMap),
+  colorizeMap(NewRemaining, [Element|UpdatedMap], SortedMap).
 
-colorizeCountry(NextCountry, InitialMap, Element, UpdatedMap) :-
+colorizeCountry(NextCountry, Remaining, NewRemaining, InitialMap, Element, UpdatedMap) :-
   findall(AdjCountry, (is_adjacent(NextCountry, AdjCountry), member([AdjCountry, _], InitialMap)), AdjCountries),
   findAdjColors(AdjCountries, InitialMap, AdjColors),
   findall(Color, (color(Color), \+ member(Color, AdjColors)), ValidColors),
-  setColor(ValidColors, NextCountry, Element, InitialMap, UpdatedMap).
+  setColor(ValidColors, NextCountry, Remaining, NewRemaining, Element, InitialMap, UpdatedMap).
 
 findAdjColors([], _, []).
 findAdjColors([AdjCountry|OtherAdjCountries], InitialMap, [AdjColor|AdjColors]) :-
   findall(Color, (color(Color), member([AdjCountry, Color], InitialMap)), [AdjColor|_]),
   findAdjColors(OtherAdjCountries, InitialMap, AdjColors).
 
-setColor([NextColor|_], NextCountry, Element, InitialMap, UpdatedMap) :-
+setColor([NextColor|_], NextCountry, Remaining, NewRemaining, Element, InitialMap, UpdatedMap) :-
   Element = [NextCountry, NextColor],
+  NewRemaining = Remaining,
   UpdatedMap = InitialMap.
-setColor([], _, Element, [[PrevCountry|[PrevColor|_]]|History], UpdatedMap) :-
+setColor([], NextCountry, Remaining, NewRemaining, Element, [[PrevCountry|[PrevColor|_]]|History], UpdatedMap) :-
   findall(AdjCountry, (is_adjacent(PrevCountry, AdjCountry), member([AdjCountry, _], History)), AdjCountries),
   findAdjColors(AdjCountries, History, AdjColors),
   NewAdjColors = [PrevColor|AdjColors],
   findall(Color, (color(Color), \+ member(Color, NewAdjColors)), ValidColors),
-  setColor(ValidColors, PrevCountry, Element, History, UpdatedMap).
+  setColor(ValidColors, PrevCountry, Remaining, NewRemaining, Element, History, UpdatedMap).
 
 mapColoring(SortedMap) :-
   listCountries(AllCountries),
