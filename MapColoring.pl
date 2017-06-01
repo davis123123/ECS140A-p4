@@ -44,11 +44,13 @@ setColor([NextColor|_], NextCountry, Remaining, NewRemaining, InitialMap, NewMap
   Element = [NextCountry, NextColor],
   NewRemaining = Remaining,
   NewMap = InitialMap,
-  NewPrevColors = [[NextColor]|PrevColors].
+  NewPrevColors = PrevColors.
 setColor([], NextCountry, Remaining, NewRemaining, [[PrevCountry|[PrevColor|_]]|History], NewMap, Element, [PrevColorList|ColorHistory], NewPrevColors) :-
   findall(AdjCountry, (is_adjacent(PrevCountry, AdjCountry), member([AdjCountry, _], History)), AdjCountries),
   findAdjColors(AdjCountries, History, AdjColors),
-  NewAdjColors = [PrevColor|AdjColors],
+  InvalidColors = [PrevColor|PrevColorList],
+  NewAdjColors = [PrevColorList|AdjColors],
+  print(NewAdjColors),
   findall(Color, (color(Color), \+ member(Color, NewAdjColors)), ValidColors),
   setColor(ValidColors, PrevCountry, [NextCountry|Remaining], NewRemaining, History, NewMap, Element, [NewAdjColors|ColorHistory], NewPrevColors).
 
@@ -56,5 +58,4 @@ mapColoring(SortedMap) :-
   listCountries(AllCountries),
   delete(AllCountries, portugal, Countries),
   InitialMap = [[portugal,red]],
-  PrevColors = [[red]],
   colorizeMap(Countries, InitialMap, SortedMap, PrevColors).
