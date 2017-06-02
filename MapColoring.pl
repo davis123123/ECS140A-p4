@@ -23,8 +23,8 @@ listCountries(L) :-
   remove_duplicates(Temp, L).
 
 colorizeMap([], InitialMap, SortedMap) :-
-  SortedMap = InitialMap.
-  % sort(InitialMap, SortedMap).
+  % SortedMap = InitialMap.
+  sort(InitialMap, SortedMap).
 colorizeMap([NextCountry|Remaining], InitialMap, SortedMap) :-
   findValidColors(NextCountry, InitialMap, ValidColors),
   setColor(ValidColors, NextCountry, Remaining, NewRemaining, InitialMap, NewMap, Element),
@@ -45,11 +45,15 @@ setColor([NextColor|_], NextCountry, Remaining, NewRemaining, InitialMap, NewMap
   NewRemaining = Remaining,
   NewMap = InitialMap.
 setColor([], NextCountry, Remaining, NewRemaining, [[PrevCountry|[PrevColor|_]]|History], NewMap, Element) :-
-  findValidColors(PrevCountry, History, ValidColors),
+  findValidColors(PrevCountry, History, SomeColors),
+  delete(SomeColors, PrevColor, ValidColors),
   setColor(ValidColors, PrevCountry, Remaining, NewRemaining, History, NewMap, Element).
 
-mapColoring(SortedMap) :-
+mapColoring(SortedMap, All, SortedEnd) :-
   listCountries(AllCountries),
-  delete(AllCountries, portugal, Countries),
-  InitialMap = [[portugal,red]],
-  colorizeMap(Countries, InitialMap, SortedMap).
+  length(AllCountries, All),
+  sort(AllCountries, AllCountries2),
+  delete(AllCountries2, hungary, Countries),
+  InitialMap = [[hungary,red]],
+  colorizeMap(Countries, InitialMap, SortedMap),
+  length(SortedMap, SortedEnd).
