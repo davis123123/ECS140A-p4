@@ -23,8 +23,8 @@ listCountries(L) :-
   remove_duplicates(Temp, L).
 
 colorizeMap([], InitialMap, SortedMap) :-
-  % SortedMap = InitialMap.
-  sort(InitialMap, SortedMap).
+  SortedMap = InitialMap.
+  % sort(InitialMap, SortedMap).
 colorizeMap([NextCountry|Remaining], InitialMap, SortedMap) :-
   findValidColors(NextCountry, InitialMap, ValidColors),
   setColor(ValidColors, NextCountry, Remaining, NewRemaining, InitialMap, NewMap, Element),
@@ -44,16 +44,32 @@ setColor([NextColor|_], NextCountry, Remaining, NewRemaining, InitialMap, NewMap
   Element = [NextCountry, NextColor],
   NewRemaining = Remaining,
   NewMap = InitialMap.
-setColor([], NextCountry, Remaining, NewRemaining, [[PrevCountry|[PrevColor|_]]|History], NewMap, Element) :-
+setColor([], NextCountry, Remaining, NewRemaining, [[PrevCountry|[PrevColor|_]]|History], NewMap, Element, ColorHistory) :-
   findValidColors(PrevCountry, History, SomeColors),
-  delete(SomeColors, PrevColor, ValidColors),
+  findPickedColors(PrevCountry, ColorHistory, PrevColors),
+  % at this point the color of the prev country will not allow the next country to have a color
+  % therefore the color of the prev country needs to be in the list of invalid colors
+  delete(SomeColors, PrevColors, ValidColors),
   setColor(ValidColors, PrevCountry, Remaining, NewRemaining, History, NewMap, Element).
 
-mapColoring(SortedMap, All, SortedEnd) :-
+findPickedColors(Country, [], PrevColors) :-
+  PrevColors = [], !.
+findPickedColors(Country, [[Name|[Colors]]|T], PrevColors) :-
+  Country == Name,
+  PrevColors = Colors, !.
+findPickedColors(Country, [[Name|[Colors]]|T], PrevColors) :-
+  findPickedColors(Country, T, PrevColors).
+
+deleteColors(_, [], _).
+deleteColors(SomeColors, [H|T], ValidColors) :-
+  deleteColors(SomeColors, T, ValidColors).
+deleteColors(SomeColors, [H|T], ValidColors) :-
+  member(H, SomeColors),
+  delete(SomeColors, H, Temp),
+  deleteColors(Temp, T, ValidColors).
+
+mapColoring(SortedMap) :-
   listCountries(AllCountries),
-  length(AllCountries, All),
-  sort(AllCountries, AllCountries2),
-  delete(AllCountries2, hungary, Countries),
-  InitialMap = [[hungary,red]],
-  colorizeMap(Countries, InitialMap, SortedMap),
-  length(SortedMap, SortedEnd).
+  delete(AllCountries, portugal, Countries),
+  InitialMap = [[portugal,red]],
+  colorizeMap(Countries, InitialMap, SortedMap).
