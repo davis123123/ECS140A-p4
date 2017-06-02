@@ -1,5 +1,4 @@
-% consult('europe.p').
-% consult('MapColoring.pl').
+% consult('europe.p'), consult('MapColoring.pl'), mapColoring(SortedMap).
 
 color(red).
 color(white).
