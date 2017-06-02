@@ -23,7 +23,7 @@ listCountries(L) :-
   remove_duplicates(Temp, L).
 
 initialize([H|T], Countries, InitialMap) :-
-  sort(T, Countries),
+  Countries = T,
   color(Color),
   InitialMap = [[H,Color]].
 
