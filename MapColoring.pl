@@ -22,13 +22,17 @@ listCountries(L) :-
   findall(Country, is_adjacent(Country, _), Temp),
   remove_duplicates(Temp, L).
 
-colorizeMap([], InitialMap, SortedMap) :-
-  SortedMap = InitialMap.
-  % sort(InitialMap, SortedMap).
-colorizeMap([NextCountry|Remaining], InitialMap, SortedMap) :-
+initialize([H|T], Countries, InitialMap) :-
+  sort(T, Countries),
+  color(Color),
+  InitialMap = [[H,Color]].
+
+colorizeMap([], InitialMap, SortedMap, _) :-
+  sort(InitialMap, SortedMap).
+colorizeMap([NextCountry|Remaining], InitialMap, SortedMap, ColorHistory) :-
   findValidColors(NextCountry, InitialMap, ValidColors),
-  setColor(ValidColors, NextCountry, Remaining, NewRemaining, InitialMap, NewMap, Element),
-  colorizeMap(NewRemaining, [Element|NewMap], SortedMap).
+  setColor(ValidColors, NextCountry, Remaining, NewRemaining, InitialMap, NewMap, Element, ColorHistory, NewColorHistory),
+  colorizeMap(NewRemaining, [Element|NewMap], SortedMap, NewColorHistory).
 
 findValidColors(NextCountry, InitialMap, ValidColors) :-
   findall(AdjCountry, (is_adjacent(NextCountry, AdjCountry), member([AdjCountry, _], InitialMap)), AdjCountries),
@@ -40,36 +44,46 @@ findAdjColors([AdjCountry|OtherAdjCountries], InitialMap, [AdjColor|AdjColors]) 
   findall(Color, (color(Color), member([AdjCountry, Color], InitialMap)), [AdjColor|_]),
   findAdjColors(OtherAdjCountries, InitialMap, AdjColors).
 
-setColor([NextColor|_], NextCountry, Remaining, NewRemaining, InitialMap, NewMap, Element) :-
+setColor([NextColor|_], NextCountry, Remaining, NewRemaining, InitialMap, NewMap, Element, ColorHistory, NewColorHistory) :-
   Element = [NextCountry, NextColor],
   NewRemaining = Remaining,
-  NewMap = InitialMap.
-setColor([], NextCountry, Remaining, NewRemaining, [[PrevCountry|[PrevColor|_]]|History], NewMap, Element, ColorHistory) :-
+  NewMap = InitialMap,
+  NewColorHistory = ColorHistory.
+setColor([], NextCountry, Remaining, NewRemaining, [[PrevCountry|[PrevColor|_]]|History], NewMap, Element, ColorHistory, NewColorHistory) :-
+  findPickedColors(NextCountry, ColorHistory, NextCountryPrevColors),
+  deleteColorHistory(NextCountry, NextCountryPrevColors, ColorHistory, OldColorHistory),
+  findPickedColors(PrevCountry, OldColorHistory, PrevColors),
+  deleteColorHistory(PrevCountry, PrevColors, OldColorHistory, OldColorHistory2),
+  setNewPrevColors(PrevCountry, PrevColor, PrevColors, NewPrevColors),
   findValidColors(PrevCountry, History, SomeColors),
-  findPickedColors(PrevCountry, ColorHistory, PrevColors),
-  % at this point the color of the prev country will not allow the next country to have a color
-  % therefore the color of the prev country needs to be in the list of invalid colors
-  delete(SomeColors, PrevColors, ValidColors),
-  setColor(ValidColors, PrevCountry, Remaining, NewRemaining, History, NewMap, Element).
+  append(PrevColors, [PrevColor], Combined),
+  deleteColors(SomeColors, Combined, ValidColors),
+  setColor(ValidColors, PrevCountry, [NextCountry|Remaining], NewRemaining, History, NewMap, Element, [NewPrevColors|OldColorHistory2], NewColorHistory).
 
-findPickedColors(Country, [], PrevColors) :-
-  PrevColors = [], !.
-findPickedColors(Country, [[Name|[Colors]]|T], PrevColors) :-
+findPickedColors(_, [], PrevColors) :-
+  PrevColors = [none], !.
+findPickedColors(Country, [[Name|[Colors]]|_], PrevColors) :-
   Country == Name,
   PrevColors = Colors, !.
-findPickedColors(Country, [[Name|[Colors]]|T], PrevColors) :-
+findPickedColors(Country, [[_|[_]]|T], PrevColors) :-
   findPickedColors(Country, T, PrevColors).
 
-deleteColors(_, [], _).
+deleteColors(SomeColors, [], ValidColors) :-
+  ValidColors = SomeColors, !.
 deleteColors(SomeColors, [H|T], ValidColors) :-
-  deleteColors(SomeColors, T, ValidColors).
-deleteColors(SomeColors, [H|T], ValidColors) :-
-  member(H, SomeColors),
   delete(SomeColors, H, Temp),
   deleteColors(Temp, T, ValidColors).
 
+deleteColorHistory(Country, Colors, ColorHistory, NewColorHistory) :-
+  PrevColors = [Country, [Colors]],
+  delete(ColorHistory, PrevColors, NewColorHistory).
+
+setNewPrevColors(PrevCountry, PrevColor, [none], NewPrevColors) :-
+  NewPrevColors = [PrevCountry, [PrevColor]], !.
+setNewPrevColors(PrevCountry, PrevColor, PrevColors, NewPrevColors) :-
+  NewPrevColors = [PrevCountry, [PrevColor|PrevColors]], !.
+
 mapColoring(SortedMap) :-
   listCountries(AllCountries),
-  delete(AllCountries, portugal, Countries),
-  InitialMap = [[portugal,red]],
-  colorizeMap(Countries, InitialMap, SortedMap).
+  initialize(AllCountries, Countries, InitialMap),
+  colorizeMap(Countries, InitialMap, SortedMap, []), !.
