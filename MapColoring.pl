@@ -16,7 +16,7 @@ remove_duplicates([Item | Rest], Current, NewRest) :-
 remove_duplicates([Item | Rest], Current, NewRest) :-
     append(Current, [Item], NewCurrent),
     remove_duplicates(Rest, NewCurrent, NewRest).
-% -------------------------------------------------
+% ------------------------------------------------
 
 listCountries(L) :-
   findall(Country, is_adjacent(Country, _), Temp),
