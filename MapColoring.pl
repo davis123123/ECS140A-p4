@@ -34,7 +34,6 @@ findValidColors(NextCountry, InitialMap, ValidColors) :-
   findall(AdjCountry, (is_adjacent(NextCountry, AdjCountry), member([AdjCountry, _], InitialMap)), AdjCountries),
   findAdjColors(AdjCountries, InitialMap, AdjColors),
   findall(Color, (color(Color), \+ member(Color, AdjColors)), ValidColors).
-  % setColor(ValidColors, NextCountry, Remaining, NewRemaining, InitialMap, NewMap, Element, InvalidColors, NewInvalidColors).
 
 findAdjColors([], _, []).
 findAdjColors([AdjCountry|OtherAdjCountries], InitialMap, [AdjColor|AdjColors]) :-
