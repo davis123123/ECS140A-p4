@@ -19,6 +19,8 @@ updatePositions(DaysTravelled, Positions, NewPositions, NewCurrentDistance, NewM
   % back(),
   % NewPositions = [],
   NewCurrentDistance = CurrentDistance - 1,
+  % updateMaxDistance(),
+  NewDaysTravelled is DaysTravelled + 1.
 updatePositions(DaysTravelled, Positions, NewPositions, NewCurrentDistance, NewMaxDistance, NewDaysTravelled) :-
   % if prev food units is less than 3, move forward
   getElement(Positions, 2, Prev),
