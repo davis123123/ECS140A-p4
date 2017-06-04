@@ -1,17 +1,23 @@
 % consult('Journey.pl').
 
-max_distance(Food, MaxDistance) :-
+max_distance(Food, FinalMaxDistance) :-
   Positions = [0, Food, 0], % [Next, Current, Prev]
   PrevMaxDistance = 0,
-  travel(Food, 0, Positions, 0, PrevMaxDistance, MaxDistance). % main recursion
+  travel(Food, 0, Positions, 0, PrevMaxDistance, MaxDistance),  % main recursion
+  FinalMaxDistance is MaxDistance * 10, !.
 
+travel(Food, DaysTravelled, Positions, _, PrevMaxDistance, MaxDistance) :-
+  getElement(Positions, 1, Current),
+  Current is 0,
+  MaxDistance is PrevMaxDistance.
 travel(Food, DaysTravelled, _, _, PrevMaxDistance, MaxDistance) :-
   DaysTravelled is Food,
   MaxDistance is PrevMaxDistance.
 travel(Food, DaysTravelled, Positions, CurrentDistance, PrevMaxDistance, MaxDistance) :-
+  getElement(Positions, 1, Current),
+  Current > 0,
   DaysTravelled < Food, % continue when days travelled < food
   updatePositions(Positions, CurrentDistance, NewPositions, NewCurrentDistance),
-
   NewDaysTravelled is DaysTravelled + 1,
   updateMaxDistance(CurrentDistance, NewCurrentDistance, PrevMaxDistance, TempMaxDistance),
   travel(Food, NewDaysTravelled, NewPositions, NewCurrentDistance, TempMaxDistance, MaxDistance).
@@ -32,7 +38,7 @@ updatePositions(Positions, CurrentDistance, NewPositions, NewCurrentDistance) :-
   getElement(Positions, 1, Current),
   back(Current, Prev, NewNext, NewCurrent),
   NewPositions = [NewNext, NewCurrent, 0],
-  NewCurrentDistance = CurrentDistance - 1.
+  NewCurrentDistance is CurrentDistance - 1.
 
 updateMaxDistance(CurrentDistance, NewCurrentDistance, PrevMaxDistance, NextMaxDistance) :-
   NewCurrentDistance =< PrevMaxDistance,
@@ -52,13 +58,13 @@ forward(Next, Current, NewCurrent, NewPrev) :-
   Current < 6,
   Holding is Current - 1,
   NewPrev is 0,
-  NewCurrent is Next + Holding, !.
+  NewCurrent is Next + Holding.
 forward(Next, Current, NewCurrent, NewPrev) :-
   Current > 5,
   Holding is 5,
   NewPrev is Current - 6,
-  NewCurrent is Next + Holding, !.
+  NewCurrent is Next + Holding.
 
 back(Current, Prev, NewNext, NewCurrent) :-
   NewCurrent is Prev,
-  NewNext is Current - 1.
+  NewNext is (Current - 1).
