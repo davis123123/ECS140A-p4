@@ -1,4 +1,4 @@
-% consult('Journey.pl').
+% consult('Journey.pl'), max_distance(20500, MaxDistance).
 
 max_distance(Food, FinalMaxDistance) :-
   Positions = [0, Food, 0], % [Next, Current, Prev]
@@ -6,7 +6,7 @@ max_distance(Food, FinalMaxDistance) :-
   travel(Food, 0, Positions, 0, PrevMaxDistance, MaxDistance),  % main recursion
   FinalMaxDistance is MaxDistance * 10, !.
 
-travel(Food, DaysTravelled, Positions, _, PrevMaxDistance, MaxDistance) :-
+travel(_, _, Positions, _, PrevMaxDistance, MaxDistance) :-
   getElement(Positions, 1, Current),
   Current is 0,
   MaxDistance is PrevMaxDistance.
